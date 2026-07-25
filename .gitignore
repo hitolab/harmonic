@@ -1,3 +1,20 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Trash
+.Trashes
+
+# Spotlight
+.Spotlight-V100
+
+# File system events
+.fseventsd
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
