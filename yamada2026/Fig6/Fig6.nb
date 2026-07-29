@@ -1,253 +1,202 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.3' *)
+
 (*CacheID: 234*)
 (* Internal cache information:
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
-NotebookDataPosition[         0,          0]
-NotebookDataLength[     14898,        379]
-NotebookOptionsPosition[     13975,        349]
-NotebookOutlinePosition[     14434,        367]
-CellTagsIndexPosition[     14391,        364]
+NotebookDataPosition[       154,          7]
+NotebookDataLength[      9810,        271]
+NotebookOptionsPosition[      9296,        254]
+NotebookOutlinePosition[      9756,        272]
+CellTagsIndexPosition[      9713,        269]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
-
-Cell[CellGroupData[{
-Cell["Goodwin\:30e2\:30c7\:30eb\:306e\:66f2\:7387\:306e\:8a08\:7b97", \
-"Section",
- CellChangeTimes->{{3.984796912495914*^9, 
-  3.984796927135988*^9}},ExpressionUUID->"85e85bb4-8f04-4dc0-8e82-\
-27c8bed0d22b"],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
+Cell[BoxData[{
  RowBox[{
   RowBox[{
-  "(*", "\:ff12\:968e\:5fae\:5206\:ff13\:968e\:5fae\:5206\:306e\:8a08\:7b97", 
-   "*)"}], "\n", 
+   RowBox[{"vars", "=", 
+    RowBox[{"{", 
+     RowBox[{"x", ",", "y", ",", "z"}], "}"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\n", 
+ RowBox[{
+  RowBox[{"dxdt", "=", 
+   RowBox[{
+    RowBox[{"1", "/", 
+     RowBox[{"(", 
+      RowBox[{"1", "+", 
+       RowBox[{"z", "^", "n"}]}], ")"}]}], "-", 
+    RowBox[{"\[Lambda]", "*", "x"}]}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"dydt", "=", 
+   RowBox[{"x", "-", 
+    RowBox[{"\[Lambda]", "*", "y"}]}]}], ";"}], "\n", 
+ RowBox[{
+  RowBox[{"dzdt", "=", 
+   RowBox[{"y", "-", 
+    RowBox[{"\[Lambda]", "*", "z"}]}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
   RowBox[{
+   RowBox[{"velocity", "=", 
+    RowBox[{"{", 
+     RowBox[{"dxdt", ",", "dydt", ",", "dzdt"}], "}"}]}], ";"}], 
+  "\[IndentingNewLine]", "\[IndentingNewLine]"}], "\n", 
+ RowBox[{
+  RowBox[{"dt", "=", "dzdt"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"ddt", "=", 
    RowBox[{
-    RowBox[{"vars", "=", 
-     RowBox[{"{", 
-      RowBox[{"x", ",", "y", ",", "z"}], "}"}]}], ";"}], "\n", 
-   "\[IndentingNewLine]", 
-   RowBox[{"(*", 
-    RowBox[{"Goodwin", " ", "model"}], "*)"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"dxdt", "=", 
+    RowBox[{
+     RowBox[{"Grad", "[", 
+      RowBox[{"dt", ",", "vars"}], "]"}], ".", "velocity"}], "//", 
+    "Simplify"}]}], ";"}], "\n", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"dddt", "=", 
+    RowBox[{
      RowBox[{
-      RowBox[{"1", "/", 
+      RowBox[{"Grad", "[", 
+       RowBox[{"ddt", ",", "vars"}], "]"}], ".", "velocity"}], "//", 
+     "Simplify"}]}], ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"F", "=", 
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"dt", "*", "dddt"}], "-", 
+        RowBox[{"ddt", "^", "2"}]}], ")"}], "*", 
+      RowBox[{
        RowBox[{"(", 
-        RowBox[{"1", "+", 
-         RowBox[{"z", "^", "n"}]}], ")"}]}], "-", 
-      RowBox[{"\[Lambda]", "*", "x"}]}]}], ";"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"dydt", "=", 
-     RowBox[{"x", "-", 
-      RowBox[{"\[Lambda]", "*", "y"}]}]}], ";"}], "\n", 
-   RowBox[{
-    RowBox[{"dzdt", "=", 
-     RowBox[{"y", "-", 
-      RowBox[{"\[Lambda]", "*", "z"}]}]}], ";"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"velocity", "=", 
-     RowBox[{"{", 
-      RowBox[{"dxdt", ",", "dydt", ",", "dzdt"}], "}"}]}], ";"}], 
-   "\[IndentingNewLine]", "\n", "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"dt", "=", "dzdt"}], ";"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"ddt", "=", 
-     RowBox[{
-      RowBox[{
-       RowBox[{"Grad", "[", 
-        RowBox[{"dt", ",", "vars"}], "]"}], ".", "velocity"}], "//", 
-      "Simplify"}]}], ";"}], "\n", 
-   RowBox[{
-    RowBox[{"dddt", "=", 
-     RowBox[{
-      RowBox[{
-       RowBox[{"Grad", "[", 
-        RowBox[{"ddt", ",", "vars"}], "]"}], ".", "velocity"}], "//", 
-      "Simplify"}]}], ";"}], "\[IndentingNewLine]", "\[IndentingNewLine]", 
-   RowBox[{"(*", 
-    RowBox[{"\:66f2\:7387\:306e\:8a08\:7b97", 
-     RowBox[{"(", "\:5206\:5b50\:306e\:307f", ")"}]}], "*)"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"F", "=", 
-     RowBox[{
-      RowBox[{
-       RowBox[{
-        RowBox[{"(", 
-         RowBox[{
-          RowBox[{"dt", "*", "dddt"}], "-", 
-          RowBox[{"ddt", "^", "2"}]}], ")"}], "*", 
-        RowBox[{
+        SuperscriptBox[
          RowBox[{"(", 
-          SuperscriptBox[
-           RowBox[{"(", 
-            RowBox[{"1", "+", 
-             SuperscriptBox["z", "n"]}], ")"}], "4"], ")"}], "/", 
-         RowBox[{"(", 
-          RowBox[{"n", " ", 
-           SuperscriptBox["z", 
-            RowBox[{
-             RowBox[{"-", "2"}], "+", "n"}]]}], ")"}]}]}], " ", "//", 
-       "Expand"}], "//", "FullSimplify"}]}], ";"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"dataPath", "=", 
-     RowBox[{"FileNameJoin", "[", 
-      RowBox[{"{", 
+          RowBox[{"1", "+", 
+           SuperscriptBox["z", "n"]}], ")"}], "4"], ")"}], "/", 
+       RowBox[{"(", 
+        RowBox[{"n", " ", 
+         SuperscriptBox["z", 
+          RowBox[{
+           RowBox[{"-", "2"}], "+", "n"}]]}], ")"}]}]}], " ", "//", 
+     "Expand"}], "//", "FullSimplify"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"dataPath", "=", 
+   RowBox[{"FileNameJoin", "[", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"NotebookDirectory", "[", "]"}], ",", "\"\<data.csv\>\""}], 
+     "}"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"trajectoryRaw", "=", 
+   RowBox[{"Import", "[", "dataPath", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"trajectoryPoints", "=", 
+   RowBox[{"N", "[", 
+    RowBox[{"ToExpression", "[", 
+     RowBox[{"trajectoryRaw", "[", 
+      RowBox[{"[", 
        RowBox[{
-        RowBox[{"NotebookDirectory", "[", "]"}], ",", "\"\<data.csv\>\""}], 
-       "}"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"trajectoryRaw", "=", 
-     RowBox[{"Import", "[", "dataPath", "]"}]}], ";"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"trajectoryPoints", "=", 
-     RowBox[{"N", "[", 
-      RowBox[{"ToExpression", "[", 
-       RowBox[{"trajectoryRaw", "[", 
-        RowBox[{"[", 
+        RowBox[{"2", ";;"}], ",", 
+        RowBox[{"2", ";;", "4"}]}], "]"}], "]"}], "]"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"trajectoryPlot", "=", 
+   RowBox[{"Graphics3D", "[", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"Directive", "[", 
+       RowBox[{"Magenta", ",", "Thick"}], "]"}], ",", 
+      RowBox[{"Line", "[", "trajectoryPoints", "]"}]}], "}"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"viewPointFromAngles", "[", 
+    RowBox[{"azimuth_", ",", "elevation_", ",", 
+     RowBox[{"distance_", ":", "3"}]}], "]"}], ":=", 
+   RowBox[{"distance", "*", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"Cos", "[", "azimuth", "]"}], "*", 
+       RowBox[{"Cos", "[", "elevation", "]"}]}], ",", 
+      RowBox[{
+       RowBox[{"Sin", "[", "azimuth", "]"}], "*", 
+       RowBox[{"Cos", "[", "elevation", "]"}]}], ",", 
+      RowBox[{"Sin", "[", "elevation", "]"}]}], "}"}]}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"makeSurfacePlot", "[", 
+    RowBox[{
+    "nInput_", ",", "lambdaInput_", ",", "azimuthDeg_", ",", 
+     "elevationDeg_"}], "]"}], ":=", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", "FPlot", "}"}], ",", 
+     RowBox[{
+      RowBox[{"FPlot", "=", 
+       RowBox[{"F", "/.", " ", 
+        RowBox[{"{", 
          RowBox[{
-          RowBox[{"2", ";;"}], ",", 
-          RowBox[{"2", ";;", "4"}]}], "]"}], "]"}], "]"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"trajectoryPlot", "=", 
-     RowBox[{"Graphics3D", "[", 
-      RowBox[{"{", 
+          RowBox[{"n", "->", "nInput"}], ",", 
+          RowBox[{"\[Lambda]", "->", "lambdaInput"}]}], "}"}]}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"Show", "[", 
        RowBox[{
-        RowBox[{"Directive", "[", 
-         RowBox[{"Red", ",", "Thick"}], "]"}], ",", 
-        RowBox[{"Line", "[", "trajectoryPoints", "]"}]}], "}"}], "]"}]}], 
-    ";"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{
-     RowBox[{"viewPointFromAngles", "[", 
-      RowBox[{"azimuth_", ",", "elevation_", ",", 
-       RowBox[{"distance_", ":", "3"}]}], "]"}], ":=", 
-     RowBox[{"distance", "*", 
-      RowBox[{"{", 
-       RowBox[{
-        RowBox[{
-         RowBox[{"Cos", "[", "azimuth", "]"}], "*", 
-         RowBox[{"Cos", "[", "elevation", "]"}]}], ",", 
-        RowBox[{
-         RowBox[{"Sin", "[", "azimuth", "]"}], "*", 
-         RowBox[{"Cos", "[", "elevation", "]"}]}], ",", 
-        RowBox[{"Sin", "[", "elevation", "]"}]}], "}"}]}]}], ";"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{
-     RowBox[{"makeSurfacePlot", "[", 
-      RowBox[{
-      "nInput_", ",", "lambdaInput_", ",", "azimuthDeg_", ",", 
-       "elevationDeg_"}], "]"}], ":=", 
-     RowBox[{"Module", "[", 
-      RowBox[{
-       RowBox[{"{", "FPlot", "}"}], ",", 
-       RowBox[{
-        RowBox[{"FPlot", "=", 
-         RowBox[{"F", "/.", " ", 
+        RowBox[{"ContourPlot3D", "[", 
+         RowBox[{
+          RowBox[{"FPlot", "==", "0"}], ",", 
           RowBox[{"{", 
-           RowBox[{
-            RowBox[{"n", "->", "nInput"}], ",", 
-            RowBox[{"\[Lambda]", "->", "lambdaInput"}]}], "}"}]}]}], ";", 
-        "\[IndentingNewLine]", 
-        RowBox[{"Show", "[", 
-         RowBox[{
-          RowBox[{"ContourPlot3D", "[", 
-           RowBox[{
-            RowBox[{"FPlot", "==", "0"}], ",", 
-            RowBox[{"{", 
-             RowBox[{"x", ",", "0", ",", "1.5"}], "}"}], ",", 
-            RowBox[{"{", 
-             RowBox[{"y", ",", "0", ",", "1.5"}], "}"}], ",", 
-            RowBox[{"{", 
-             RowBox[{"z", ",", "0", ",", "2"}], "}"}], ",", 
-            RowBox[{"PlotPoints", "->", "30"}], ",", 
-            RowBox[{"Mesh", "->", "None"}], ",", 
-            RowBox[{"ContourStyle", "->", 
-             RowBox[{"Directive", "[", 
-              RowBox[{"Cyan", ",", 
-               RowBox[{"Opacity", "[", "0.7", "]"}], ",", 
-               RowBox[{"Specularity", "[", 
-                RowBox[{"White", ",", "30"}], "]"}]}], "]"}]}], ",", 
-            RowBox[{"PerformanceGoal", "->", "\"\<Quality\>\""}]}], "]"}], ",",
-           "trajectoryPlot", ",", 
-          RowBox[{"PlotLabel", "->", 
-           RowBox[{"Row", "[", 
-            RowBox[{"{", 
+           RowBox[{"x", ",", "0", ",", "1.5"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"y", ",", "0", ",", "1.5"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"z", ",", "0", ",", "2"}], "}"}], ",", 
+          RowBox[{"PlotPoints", "->", "30"}], ",", 
+          RowBox[{"Mesh", "->", "None"}], ",", 
+          RowBox[{"ContourStyle", "->", 
+           RowBox[{"Directive", "[", 
+            RowBox[{
+             RowBox[{"Lighting", "->", "\"\<Neutral\>\""}], ",", "Cyan", ",", 
              
-             RowBox[{"\"\<Inflection Surface F=0 (n = \>\"", ",", "nInput", 
-              ",", "\"\<, \[Lambda] = \>\"", ",", "lambdaInput", 
-              ",", "\"\<)\>\""}], "}"}], "]"}]}], ",", 
-          RowBox[{"AxesLabel", "->", 
+             RowBox[{"Opacity", "[", "0.6", "]"}], ",", 
+             RowBox[{"Thickness", "[", "0.16", "]"}], ",", 
+             RowBox[{"Specularity", "[", 
+              RowBox[{"White", ",", "30"}], "]"}]}], "]"}]}], ",", 
+          RowBox[{"PerformanceGoal", "->", "\"\<Quality\>\""}]}], "]"}], ",", 
+        "trajectoryPlot", ",", 
+        RowBox[{"PlotLabel", "->", 
+         RowBox[{"Row", "[", 
+          RowBox[{"{", 
+           
+           RowBox[{"\"\<Inflection Surface F=0 (n = \>\"", ",", "nInput", 
+            ",", "\"\<, \[Lambda] = \>\"", ",", "lambdaInput", 
+            ",", "\"\<)\>\""}], "}"}], "]"}]}], ",", 
+        RowBox[{"AxesLabel", "->", 
+         RowBox[{"{", 
+          RowBox[{"\"\<x\>\"", ",", "\"\<y\>\"", ",", "\"\<z\>\""}], "}"}]}], 
+        ",", 
+        RowBox[{"Boxed", "->", "False"}], ",", 
+        RowBox[{"PlotRange", "->", 
+         RowBox[{"{", 
+          RowBox[{
            RowBox[{"{", 
-            RowBox[{"\"\<x\>\"", ",", "\"\<y\>\"", ",", "\"\<z\>\""}], 
-            "}"}]}], ",", 
-          RowBox[{"Boxed", "->", "False"}], ",", 
-          RowBox[{"PlotRange", "->", 
+            RowBox[{"0", ",", "1.5"}], "}"}], ",", 
            RowBox[{"{", 
-            RowBox[{
-             RowBox[{"{", 
-              RowBox[{"0", ",", "1.5"}], "}"}], ",", 
-             RowBox[{"{", 
-              RowBox[{"0", ",", "1.5"}], "}"}], ",", 
-             RowBox[{"{", 
-              RowBox[{"0", ",", "2"}], "}"}]}], "}"}]}], ",", 
-          RowBox[{"ViewPoint", "->", 
-           RowBox[{"viewPointFromAngles", "[", 
-            RowBox[{
-             RowBox[{"azimuthDeg", "*", "Degree"}], ",", 
-             RowBox[{"elevationDeg", "*", "Degree"}]}], "]"}]}], ",", 
-          RowBox[{"ImageSize", "->", "Large"}]}], "]"}]}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
-   RowBox[{"Manipulate", "[", 
-    RowBox[{"(*", 
-     RowBox[{
-     "1.", " ", "\:30d1\:30e9\:30e1\:30fc\:30bf\:3092\:95a2\:6570", " ", "F", 
-      " ", "\:306b\:9069\:7528"}], "*)"}], 
-    RowBox[{
-     RowBox[{"makeSurfacePlot", "[", 
-      RowBox[{
-      "nVal", ",", "lambdaVal", ",", "azimuthVal", ",", "elevationVal"}], 
-      "]"}], ",", 
-     RowBox[{"(*", 
-      RowBox[{
-      "3.", " ", 
-       "\:30b3\:30f3\:30c8\:30ed\:30fc\:30eb\:90e8\:5206\:306e\:8a2d\:5b9a"}],
-       "*)"}], 
-     RowBox[{"{", 
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{"nVal", ",", "12", ",", "\"\<\:6b21\:6570 n\>\""}], "}"}], ",",
-        "9", ",", "30", ",", "1", ",", 
-       RowBox[{"Appearance", "->", "\"\<Labeled\>\""}]}], "}"}], ",", 
-     RowBox[{"{", 
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{
-        "lambdaVal", ",", "0.6", ",", "\"\<\:4fc2\:6570 \[Lambda]\>\""}], 
-        "}"}], ",", "0.05", ",", "1.0", ",", "0.05", ",", 
-       RowBox[{"Appearance", "->", "\"\<Labeled\>\""}]}], "}"}], ",", 
-     RowBox[{"{", 
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{
-        "azimuthVal", ",", "45", ",", "\"\<\:65b9\:4f4d\\u89d2 (deg)\>\""}], 
-        "}"}], ",", 
-       RowBox[{"-", "180"}], ",", "180", ",", "5", ",", 
-       RowBox[{"Appearance", "->", "\"\<Labeled\>\""}]}], "}"}], ",", 
-     RowBox[{"{", 
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{
-        "elevationVal", ",", "25", ",", "\"\<\:4ef0\\u89d2 (deg)\>\""}], 
-        "}"}], ",", 
-       RowBox[{"-", "90"}], ",", "90", ",", "5", ",", 
-       RowBox[{"Appearance", "->", "\"\<Labeled\>\""}]}], "}"}]}], "]"}], 
-   "\[IndentingNewLine]"}]}]], "Input",
+            RowBox[{"0", ",", "1.5"}], "}"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"0", ",", "2"}], "}"}]}], "}"}]}], ",", 
+        RowBox[{"ViewPoint", "->", 
+         RowBox[{"viewPointFromAngles", "[", 
+          RowBox[{
+           RowBox[{"azimuthDeg", "*", "Degree"}], ",", 
+           RowBox[{"elevationDeg", "*", "Degree"}]}], "]"}]}], ",", 
+        RowBox[{"ImageSize", "->", "Large"}]}], "]"}]}]}], "]"}]}], 
+  ";"}]}], "Input",
  CellChangeTimes->{
   3.984796937872053*^9, {3.984797066443275*^9, 3.9847970703045883`*^9}, {
    3.9848074652554617`*^9, 3.9848076332960463`*^9}, {3.9848077761860657`*^9, 
@@ -258,102 +207,58 @@ Cell[BoxData[
    3.985050871513352*^9, 3.985050900030459*^9}, {3.98505099091861*^9, 
    3.985050990999797*^9}, {3.985068089742445*^9, 3.985068090143762*^9}, {
    3.9850685374087543`*^9, 3.985068538509935*^9}, {3.985088092629753*^9, 
-   3.98508809360466*^9}, 3.985125763814954*^9},
- CellLabel->"In[1]:=",ExpressionUUID->"e9844137-de6c-4651-b16e-7100746b3ba8"],
-
-Cell[BoxData[
- TagBox[
-  StyleBox[
-   DynamicModuleBox[{$CellContext`azimuthVal$$ = 
-    45, $CellContext`elevationVal$$ = 25, $CellContext`lambdaVal$$ = 
-    0.6, $CellContext`nVal$$ = 12, Typeset`show$$ = True, 
-    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
-    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
-    "\"\:540d\:79f0\:672a\:5b9a\:7fa9\"", Typeset`specs$$ = {{{
-       Hold[$CellContext`nVal$$], 12, "\:6b21\:6570 n"}, 9, 30, 1, 
-      ControlType -> Manipulator}, {{
-       Hold[$CellContext`lambdaVal$$], 0.6, "\:4fc2\:6570 \[Lambda]"}, 0.05, 
-      1., 0.05, ControlType -> Manipulator}, {{
-       Hold[$CellContext`azimuthVal$$], 45, 
-       "\:65b9\:4f4d\\u89d2 (deg)"}, -180, 180, 5, ControlType -> 
-      Manipulator}, {{
-       Hold[$CellContext`elevationVal$$], 25, "\:4ef0\\u89d2 (deg)"}, -90, 90,
-       5, ControlType -> Manipulator}}, Typeset`size$$ = {
-    576., {291.6139122169095, 297.3458458106595}}, Typeset`update$$ = 0, 
-    Typeset`initDone$$, Typeset`skipInitDone$$ = True, 
-    Typeset`keyframeActionsQ$$ = False, Typeset`keyframeList$$ = {}}, 
-    DynamicBox[Manipulate`ManipulateBoxes[
-     1, StandardForm, 
-      "Variables" :> {$CellContext`azimuthVal$$ = 
-        45, $CellContext`elevationVal$$ = 25, $CellContext`lambdaVal$$ = 
-        0.6, $CellContext`nVal$$ = 12}, "ControllerVariables" :> {}, 
-      "OtherVariables" :> {
-       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
-        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
-        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
-         Typeset`skipInitDone$$, Typeset`keyframeActionsQ$$, 
-        Typeset`keyframeList$$}, 
-      "Body" :> $CellContext`makeSurfacePlot[$CellContext`nVal$$, \
-$CellContext`lambdaVal$$, $CellContext`azimuthVal$$, \
-$CellContext`elevationVal$$], 
-      "Specifications" :> {{{$CellContext`nVal$$, 12, "\:6b21\:6570 n"}, 9, 
-         30, 1, Appearance -> 
-         "Labeled"}, {{$CellContext`lambdaVal$$, 0.6, 
-          "\:4fc2\:6570 \[Lambda]"}, 0.05, 1., 0.05, Appearance -> 
-         "Labeled"}, {{$CellContext`azimuthVal$$, 45, 
-          "\:65b9\:4f4d\\u89d2 (deg)"}, -180, 180, 5, Appearance -> 
-         "Labeled"}, {{$CellContext`elevationVal$$, 25, 
-          "\:4ef0\\u89d2 (deg)"}, -90, 90, 5, Appearance -> "Labeled"}}, 
-      "Options" :> {}, "DefaultOptions" :> {}],
-     ImageSizeCache->{
-      625.0999999999999, {383.6843376319486, 389.4162712256986}},
-     SingleEvaluation->True],
-    Deinitialization:>None,
-    DynamicModuleValues:>{},
-    SynchronousInitialization->True,
-    UndoTrackedVariables:>{Typeset`show$$, Typeset`bookmarkMode$$},
-    UnsavedVariables:>{Typeset`initDone$$},
-    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
-   Deployed->True,
-   StripOnInput->False],
-  Manipulate`InterpretManipulate[1]]], "Output",
- CellChangeTimes->{{3.9848079267477083`*^9, 3.984807945996991*^9}, 
-   3.984808058732813*^9, {3.984808586654666*^9, 3.9848086432183647`*^9}, 
-   3.9850375960929527`*^9, {3.9850507384387302`*^9, 3.9850507430325823`*^9}, 
-   3.985050783535364*^9, {3.9850508163295803`*^9, 3.9850508232416477`*^9}, {
-   3.9850508866923857`*^9, 3.985050900515213*^9}, 3.985050991501453*^9, 
-   3.9850516704814253`*^9, 3.985052770110032*^9, 3.985052932970731*^9, 
-   3.985068039872596*^9, 3.985068091210725*^9, 3.9850685482025843`*^9, 
-   3.985087625932187*^9, 3.985088041637117*^9, 3.9851257828310223`*^9, 
-   3.993264900564968*^9},
- CellLabel->"Out[16]=",ExpressionUUID->"2bcbc7d6-c8df-4c10-9e1a-b1eeb4973da1"]
-}, Open  ]],
+   3.98508809360466*^9}, {3.990237912036224*^9, 3.990237912680175*^9}, {
+   3.990238651427292*^9, 3.990238657267456*^9}, {3.990238968683371*^9, 
+   3.990238970939912*^9}, {3.990239027461667*^9, 3.99023902788942*^9}, {
+   3.99023908318038*^9, 3.9902391206709137`*^9}, {3.990239153336165*^9, 
+   3.990239167900855*^9}, {3.990239208778564*^9, 3.990239209379548*^9}, {
+   3.990239469842208*^9, 3.9902394998497057`*^9}, {3.990239566367236*^9, 
+   3.990239567041896*^9}, {3.9903027748248777`*^9, 3.9903027761378727`*^9}, {
+   3.990302978812566*^9, 3.990302980101232*^9}, 3.990663214643715*^9, {
+   3.990663291763259*^9, 3.9906632924883823`*^9}, {3.9943052374259653`*^9, 
+   3.994305261931612*^9}, 3.994305315080263*^9, 3.994305345339023*^9, {
+   3.994305398741612*^9, 
+   3.9943053991632223`*^9}},ExpressionUUID->"e9844137-de6c-4651-b16e-\
+7100746b3ba8"],
 
 Cell[BoxData[{
+ RowBox[{
+  RowBox[{"dir", "=", 
+   RowBox[{"FileNameJoin", "[", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"NotebookDirectory", "[", "]"}], ",", "\"\<img\>\""}], "}"}], 
+    "]"}]}], ";"}], "\n", 
+ RowBox[{
+  RowBox[{"If", "[", 
+   RowBox[{
+    RowBox[{"!", 
+     RowBox[{"DirectoryQ", "[", "dir", "]"}]}], ",", 
+    RowBox[{"CreateDirectory", "[", "dir", "]"}]}], "]"}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"exportPath", "=", 
    RowBox[{"FileNameJoin", "[", 
     RowBox[{"{", 
-     RowBox[{
-      RowBox[{"NotebookDirectory", "[", "]"}], 
-      ",", "\"\<surface_trajectory.pdf\>\""}], "}"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+     RowBox[{"dir", ",", "\"\<Fig6.pdf\>\""}], "}"}], "]"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"Export", "[", 
    RowBox[{"exportPath", ",", 
     RowBox[{"makeSurfacePlot", "[", 
      RowBox[{"12", ",", "0.6", ",", "45", ",", "25"}], "]"}]}], "]"}], 
   ";"}]}], "Input",
- CellChangeTimes->{3.985088104361875*^9},
- CellLabel->"In[17]:=",ExpressionUUID->"67de2328-f740-4524-bf46-3d018d471c39"]
-}, Open  ]]
+ CellChangeTimes->{
+  3.985088104361875*^9, {3.994304607362537*^9, 3.994304632629615*^9}, {
+   3.994304730332116*^9, 3.994304730504057*^9}, {3.9943053317831717`*^9, 
+   3.994305332909938*^9}},ExpressionUUID->"67de2328-f740-4524-bf46-\
+3d018d471c39"]
 },
-WindowSize->{Full, Full},
-WindowMargins->{{-1, Automatic}, {Automatic, 0}},
+WindowSize->{1427, 895},
+WindowMargins->{{Automatic, 238}, {Automatic, 48}},
 PrintingCopies->1,
 PrintingPageRange->{1, Automatic},
 FrontEndVersion->"14.3 for Mac OS X ARM (64-bit) (2025\:5e747\:67088\:65e5)",
 StyleDefinitions->"Default.nb",
-ExpressionUUID->"17f8befc-e4f2-4a4e-823c-b59d7aa47535"
+ExpressionUUID->"663303ba-c3eb-4d47-9da6-e1717f9ea67a"
 ]
 (* End of Notebook Content *)
 
@@ -366,14 +271,8 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[CellGroupData[{
-Cell[422, 15, 208, 4, 66, "Section",ExpressionUUID->"85e85bb4-8f04-4dc0-8e82-27c8bed0d22b"],
-Cell[CellGroupData[{
-Cell[655, 23, 9139, 238, 800, "Input",ExpressionUUID->"e9844137-de6c-4651-b16e-7100746b3ba8"],
-Cell[9797, 263, 3569, 65, 790, "Output",ExpressionUUID->"2bcbc7d6-c8df-4c10-9e1a-b1eeb4973da1"]
-}, Open  ]],
-Cell[13381, 331, 578, 15, 128, "Input",ExpressionUUID->"67de2328-f740-4524-bf46-3d018d471c39"]
-}, Open  ]]
+Cell[554, 20, 7682, 201, 673, "Input",ExpressionUUID->"e9844137-de6c-4651-b16e-7100746b3ba8"],
+Cell[8239, 223, 1053, 29, 148, "Input",ExpressionUUID->"67de2328-f740-4524-bf46-3d018d471c39"]
 }
 ]
 *)
