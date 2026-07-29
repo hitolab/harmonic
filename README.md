@@ -7,9 +7,9 @@ A curvature-based criterion for harmonic circadian waveforms
 
 ## Code overview (yamada2026/)
 
-Fig1
-Main_FN.py (FN/) : Curvature analysis of the FitzHugh-Nagumo model limit cycle.
-Main_SL.py (SL/) : Curvature analysis of the Stuart-Landau model limit cycle.
+Fig1/FN/Main_FN.py: Curvature analysis of the FitzHugh-Nagumo model limit cycle.
+
+Fig1/SL/Main_SL.py: Curvature analysis of the Stuart-Landau model limit cycle.
 
 Fig2
 Main_raw.py : Curvature analysis of raw experimental bioluminescence traces (Cyanobacteria, mouse SCN).
