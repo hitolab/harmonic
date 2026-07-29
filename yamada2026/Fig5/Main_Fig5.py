@@ -53,8 +53,8 @@ AX_TICKS = [0, 1]
 
 FILL_A = '#F7DCC4'   # z < 1  region (pale peach)
 FILL_B = '#CFE2DD'   # z >= 1 region (pale teal)
-MARK_A = '#3F9A8F'   # x mark for z < 1  (teal)
-MARK_B = '#E07B39'   # x mark for z >= 1 (orange)
+MARK_A = '#E07B39'   # x mark for z < 1  (orange)
+MARK_B = '#3F9A8F'   # x mark for z >= 1 (teal)
 PUNCH = 'white'      # ellipse interior (where the condition does not hold)
 
 CACHE_NAME = 'Fig5B_lambda_sweep'
