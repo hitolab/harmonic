@@ -25,7 +25,7 @@ force_recalc = args.force
 # Define the models and their corresponding parameters to run
 models_to_run = [
     {
-        'name': 'FN_stoch',
+        'name': 'FN',
         'params': [3.0, 0.4, 0.6, 0.04, 1e-3], # a, b, c, noise_std, dt
         'title': 'FitzHugh-Nagumo Model',
         'sigma_list': ['raw', 0, 0.04, 0.08, 0.12, 0.16],
@@ -33,7 +33,7 @@ models_to_run = [
         'css_ticks': np.arange(0, 0.21, 0.05)
     },
     {
-        'name': 'SL_stoch',
+        'name': 'SL',
         'params': [4.0, 0.3, 0.4, 0.3, 1e-3], # A, B, W, noise_std, dt
         'title': 'Stuart-Landau Model',
         'sigma_list': ['raw', 0, 0.04, 0.08, 0.12, 0.16],
@@ -70,32 +70,30 @@ for m_idx, model_info in enumerate(models_to_run):
     
     # Define parameter names for this model for the CSV header
     if 'FN' in model_name:
-        param_names_pre  = ['a', 'b', 'c', 'noise_std', 'dt']
-        param_names_norm = ['a', 'b', 'c', 'noise_std', 'dtau', 'T']
-    elif 'SL_stoch' in model_name:
-        param_names_pre  = ['A', 'B', 'W', 'noise_std', 'dt']
-        param_names_norm = ['A', 'B', 'W', 'noise_std', 'dtau', 'T']
+        param_names_det   = ['a', 'b', 'c']
+        param_names_stoch = ['a', 'b', 'c', 'noise_std', 'dtau', 'T']
+    elif 'SL' in model_name:
+        param_names_det   = ['A', 'B', 'W']
+        param_names_stoch = ['A', 'B', 'W', 'noise_std', 'dtau', 'T']
     else:
-        param_names_pre  = [f'p{i}' for i in range(len(params))]
-        param_names_norm = param_names_pre + ['dtau', 'T']
+        param_names_det   = [f'p{i}' for i in range(len(params) - 2)]
+        param_names_stoch = param_names_det + ['noise_std', 'dtau', 'T']
 
-    # 1) Noiseless preliminary run to estimate period accurately
-    params_noiseless = list(params)
-    params_noiseless[-2] = 0.0  # noise_std = 0
-    res_pre = hl.runge_iterate(model_name, dt_sim, 48.0, params_noiseless, param_names=param_names_pre, force_recalculate=force_recalc)
+    # 1) Noiseless preliminary run (base deterministic model) to estimate period accurately
+    params_det = list(params[:-2])  # drop noise_std, dt -> [a, b, c]
+    res_pre = hl.runge_iterate(model_name, dt_sim, 48.0, params_det, param_names=param_names_det, force_recalculate=force_recalc)
     time_pre = np.arange(len(res_pre[0])) * dt_sim
     T_est = hl.get_average_period(time_pre, res_pre[0], prominence=0.1)
     if np.isnan(T_est): T_est = 1.0 # fallback
 
-    # 2) Main run: normalized-time model (_norm_euler), fixed dτ = 1/100
-    # Pure Euler-Maruyama (not RK4): the noise term must be sampled fresh
-    # every model_func call, which only holds for a single-evaluation-per-step
-    # integrator.
+    # 2) Main run: stochastic model (Models/{name}_stoch, normalized time, Euler-Maruyama),
+    # fixed dτ = 1/100. Pure Euler-Maruyama (not RK4): the noise term must be sampled fresh
+    # every model_func call, which only holds for a single-evaluation-per-step integrator.
     dtau = 1.0 / 100
-    model_name_norm = f"{model_name}_norm_euler"
+    model_name_stoch = f"{model_name}_stoch"
     params_norm = list(params[:-1]) + [dtau, T_est]  # replace original dt with dtau, append T
     td_long_norm = 110.0  # 110 cycles in normalized time (τ-units)
-    res_long = hl.euler_maruyama_iterate(model_name_norm, dtau, td_long_norm, params_norm, param_names=param_names_norm, force_recalculate=force_recalc)
+    res_long = hl.euler_maruyama_iterate(model_name_stoch, dtau, td_long_norm, params_norm, param_names=param_names_stoch, force_recalculate=force_recalc)
     x_long = res_long[0]
     time_long = np.arange(len(x_long)) * dtau  # τ-time axis
 
@@ -127,7 +125,7 @@ for m_idx, model_info in enumerate(models_to_run):
     
     # Construct parameter part for filename
     param_suffix = "_".join([f"{p:.6g}" for p in params_norm])
-    metadata_base = {n: v for n, v in zip(param_names_norm, params_norm)}
+    metadata_base = {n: v for n, v in zip(param_names_stoch, params_norm)}
     
     # ------------------------------------------------------------
     # 2.3) Plot Phase Portraits and Time Series (Sigma Loop)

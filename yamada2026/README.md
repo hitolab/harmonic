@@ -40,12 +40,10 @@ analysis.py : Shared analysis helper routines.
 backend.py : Simulation backend interface.
 
 Models
-Each model below has its own directory with a `model_*.cpp` defining the ODE right-hand side (compiled to `.dylib` and called from Lib/harmonicity.py). The `_stoch` and `_stoch_norm_euler` folders are NOT different models -- they are the same FN/SL equations with additive noise (Euler-Maruyama) bolted on, so the model itself is unchanged between FN vs. FN_stoch vs. FN_stoch_norm_euler (likewise for SL).
+Each model below has its own directory with a `model_*.cpp` defining the ODE right-hand side (compiled to `.dylib` and called from Lib/harmonicity.py). The `_stoch` folders are NOT different models -- they are the same FN/SL equations with additive noise (Euler-Maruyama, normalized time tau = t/T) bolted on, so the model itself is unchanged between FN vs. FN_stoch (likewise for SL).
 
 FN : FitzHugh-Nagumo oscillator, deterministic. Params: a, b, c.
 SL : Stuart-Landau oscillator, deterministic. Params: a, b, w.
-FN_stoch : FN with additive noise, integrated with RK4 (noise sampled once per step to stay consistent with Euler-Maruyama). Adds params noise_std, dt.
-SL_stoch : SL with additive noise, same RK4/noise scheme as FN_stoch. Adds params noise_std, dt.
-FN_stoch_norm_euler : FN with additive noise, rewritten in normalized time tau = t/T and integrated with plain Euler-Maruyama (one model_func call per step, so noise is fresh every call instead of frozen across RK4 sub-stages). Adds params noise_std, dtau, T.
-SL_stoch_norm_euler : SL, same normalized-time/Euler-Maruyama treatment as FN_stoch_norm_euler.
+FN_stoch : FN with additive noise, rewritten in normalized time tau = t/T and integrated with Euler-Maruyama . Adds params noise_std, dtau, T.
+SL_stoch : SL, same normalized-time/Euler-Maruyama noise treatment as FN_stoch. Adds params noise_std, dtau, T.
 goodwin : Goodwin oscillator (cyclic inhibition), deterministic. Params: lambda, n. Also has a high-precision mpmath reimplementation (model_goodwin_mp.py) used where double precision isn't enough (e.g. Fig4/C_Heatmap).
