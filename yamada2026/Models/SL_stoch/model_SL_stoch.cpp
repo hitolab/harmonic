@@ -6,42 +6,33 @@ extern "C" {
 
 const int V = 2;
 
-// Model: Stuart-Landau with noise (stochastic)
-// Params: [0]=a, [1]=b, [2]=w, [3]=noise_std, [4]=dt
+// Stuart-Landau in normalized time tau = t/T, for use with
+// EulerMaruyamaIterate (model_func called exactly once per step, so noise
+// is sampled fresh every call -- no RK4 sub-stage freezing needed).
+// Params: [0]=a, [1]=b, [2]=w, [3]=noise_std, [4]=dtau, [5]=T
+// (1/T)dx/dt = F(x) + sqrt(D)*xi  ->  noise per tau-step = noise_std/sqrt(dtau)
 static thread_local std::mt19937 generator(12345);
 static thread_local std::normal_distribution<double> dist(0.0, 1.0);
 
-static thread_local int call_count = 0;
-static thread_local double current_noise_x = 0.0;
-static thread_local double current_noise_y = 0.0;
-
 void model_func(const double *params, const double *x, double *dxdt) {
-  double a = params[0];
-  double b = params[1];
-  double w = params[2];
-  double noise_std = params[3];
-  double dt = params[4];
+  double a          = params[0];
+  double b          = params[1];
+  double w          = params[2];
+  double noise_std  = params[3];
+  double dtau       = params[4];
+  double T          = params[5];
 
-  if (call_count == 0) {
-      if (noise_std > 0.0 && dt > 0.0) {
-          double noise_factor = noise_std / std::sqrt(dt);
-          current_noise_x = dist(generator) * noise_factor;
-          current_noise_y = dist(generator) * noise_factor;
-      } else {
-          current_noise_x = 0.0;
-          current_noise_y = 0.0;
-      }
+  double noise_x = 0.0, noise_y = 0.0;
+  if (noise_std > 0.0 && dtau > 0.0) {
+      double noise_factor = noise_std / std::sqrt(dtau);
+      noise_x = dist(generator) * noise_factor;
+      noise_y = dist(generator) * noise_factor;
   }
 
   double r2 = x[0] * x[0] + x[1] * x[1];
 
-  // x_dot = a*x(1) - w*x(2) - (x(1)^2+x(2)^2)*(x(1)-b*x(2))
-  dxdt[0] = a * x[0] - w * x[1] - r2 * (x[0] - b * x[1]) + current_noise_x;
-
-  // y_dot = a*x(2) + w*x(1) - (x(1)^2+x(2)^2)*(x(2)+b*x(1))
-  dxdt[1] = a * x[1] + w * x[0] - r2 * (x[1] + b * x[0]) + current_noise_y;
-
-  call_count = (call_count + 1) % 4;
+  dxdt[0] = T * (a * x[0] - w * x[1] - r2 * (x[0] - b * x[1])) + noise_x;
+  dxdt[1] = T * (a * x[1] + w * x[0] - r2 * (x[1] + b * x[0])) + noise_y;
 }
 
 int get_v() { return V; }
