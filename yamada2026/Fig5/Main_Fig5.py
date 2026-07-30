@@ -46,7 +46,7 @@ import Lib.plot_utils as pu
 # Configuration
 # -----------------------------------------------------------------------------
 LAMBDAS = [0.1, 0.3, 0.5, 0.7, 0.9]              # panels shown in Fig.5B
-LAM_HI, LAM_LO, LAM_STEP = 0.98, 0.02, 0.002     # continuous sweep
+LAM_HI, LAM_LO, LAM_STEP = 0.99, 0.01, 0.01     # continuous sweep
 
 AX_MAX = 1.2
 AX_TICKS = [0, 1]

@@ -13,7 +13,7 @@ import Lib.plot_utils as pu
 # -----------------------------------------------------------------------------
 # Configuration
 # -----------------------------------------------------------------------------
-L_vals = [0.2, 0.5, 0.8]
+L_vals = [0.5]
 N_EXP = 17
 DT = 1e-3
 VAR_NAMES = ['x', 'y', 'z']
@@ -216,7 +216,8 @@ def compute_condition_data(l_val, R_raw_d, force_recalc=False):
 # Stage 3: plotting
 # -----------------------------------------------------------------------------
 def plot_variable(var_name, all_var_data):
-    fig = plt.figure(figsize=(12, 12))
+    n_cols = len(L_vals)
+    fig = plt.figure(figsize=(4 * n_cols, 12))
 
     for col_idx, l_val in enumerate(L_vals):
         data = all_var_data[var_name][l_val]
@@ -238,17 +239,11 @@ def plot_variable(var_name, all_var_data):
         d_pos = np.where(mask2_ext, d_data, np.nan)
 
         # --- Row 1: time series ---
-        ax1 = plt.subplot(4, 3, col_idx + 1)
+        ax1 = plt.subplot(4, n_cols, col_idx + 1)
         ax1.plot(T_norm, r_neg, '-k', linewidth=1.2)
         ax1.plot(T_norm, r_pos, '-c', linewidth=1.2)
-        if var_name == 'x':
-            ymin, ymax = -0.1, 0.9
-            yt = [-0.1, 0.9]
-        else:
-            r_center = (np.nanmax(r_data) + np.nanmin(r_data)) / 2
-            r_span = (np.nanmax(r_data) - np.nanmin(r_data)) * 1.3
-            yt = [r_center - r_span / 2, r_center + r_span / 2]
-            _, _, ymax, ymin = pu.plot_axis([0, 2], yt, 1.0, 1.0)
+        ymin, ymax = 0, 3
+        yt = [0, 3]
         ax1.set_xlim(0, 2)
         ax1.set_ylim(ymin, ymax)
         ax1.set_yticks(yt)
@@ -259,61 +254,47 @@ def plot_variable(var_name, all_var_data):
             ax1.set_ylabel(var_name)
 
         # --- Row 2: phase portrait ---
-        ax2 = plt.subplot(4, 3, col_idx + 1 + 3)
+        ax2 = plt.subplot(4, n_cols, col_idx + 1 + n_cols)
         ax2.plot(r_neg, d_neg, '-k', linewidth=1.2)
         ax2.plot(r_pos, d_pos, '-c', linewidth=1.2)
-        if var_name == 'x':
-            xmin, xmax = -0.2, 1
-            ymin, ymax = -0.6, 0.6
-            xt = [-0.2, 1]
-            yt2 = [-0.6, 0.6]
-        else:
-            span_r2 = max(
-                np.nanmax(r_data) - np.nanmin(r_data),
-                np.nanmax(d_data) - np.nanmin(d_data)
-            ) * 1.3
-            x_center = round(np.nanmean(r_data), 1)
-            y_center_d = round(np.nanmean(d_data), 1)
-            xt = [x_center - span_r2 / 2, x_center + span_r2 / 2]
-            yt2 = [y_center_d - span_r2 / 2, y_center_d + span_r2 / 2]
-            xmax, xmin, ymax, ymin = pu.plot_axis(xt, yt2, 1.0, 1.0)
+        xmin, xmax = (-1, 1) if var_name == 'x' else (0, 2)
+        ymin, ymax = -1, 1
+        xt = [xmin, xmax]
+        yt2 = [-1, 1]
         ax2.set_xlim(xmin, xmax)
         ax2.set_ylim(ymin, ymax)
         ax2.set_xticks(xt)
         ax2.set_yticks(yt2)
         ax2.set_box_aspect(1)
 
-        # --- Row 3: K > 0 (cyan) ---
-        ax3 = plt.subplot(4, 3, col_idx + 1 + 6)
+        # --- Row 3/4 shared range: fixed at 10^-2 .. 10^2 (absolute value) ---
         k_plot = scipy.signal.medfilt(k_data, kernel_size=21)
         k_pos = np.where(k_plot > 0, k_plot, np.nan)
         k_neg = np.where(k_plot < 0, -k_plot, np.nan)
+        k_exps = [-2, -1, 0, 1, 2]
+        k_ylim = (10.0 ** k_exps[0], 10.0 ** k_exps[-1])
+        k_yticks = [10.0 ** e for e in k_exps]
+
+        # --- Row 3: K > 0 (cyan) ---
+        ax3 = plt.subplot(4, n_cols, col_idx + 1 + 2 * n_cols)
         if np.any(mask2):
             ax3.semilogy(T_norm, k_pos, '-c')
         ax3.set_xlim(0, 2)
-        if var_name == 'x':
-            ax3.set_ylim(1e-8, 1e8)
-            ax3.set_yticks([1e-8, 1e-4, 1, 1e4, 1e8])
-        else:
-            ax3.set_ylim(10 ** (-2.4), 10 ** (2.4))
-            ax3.set_yticks([1e-2, 1, 1e2])
+        ax3.set_ylim(*k_ylim)
+        ax3.set_yticks(k_yticks)
+        ax3.set_yticklabels([f'10$^{{{e}}}$' for e in k_exps])
         ax3.set_xticks([0, 1, 2])
         ax3.minorticks_off()
         ax3.set_box_aspect(1 / 2)
 
         # --- Row 4: K < 0 (black) ---
-        ax4 = plt.subplot(4, 3, col_idx + 1 + 9)
+        ax4 = plt.subplot(4, n_cols, col_idx + 1 + 3 * n_cols)
         if np.any(mask1):
             ax4.semilogy(T_norm, k_neg, '-k')
         ax4.set_xlim(0, 2)
-        if var_name == 'x':
-            ax4.set_ylim(1e-8, 1e8)
-            ax4.set_yticks([1e-8, 1e-4, 1, 1e4, 1e8])
-            ax4.set_yticklabels(['-10$^{-8}$', '-10$^{-4}$', '-10$^{0}$', '-10$^{4}$', '-10$^{8}$'])
-        else:
-            ax4.set_ylim(10 ** (-2.4), 10 ** (2.4))
-            ax4.set_yticks([1e-2, 1, 1e2])
-            ax4.set_yticklabels(['-10$^{-2}$', '-10$^{0}$', '-10$^{2}$'])
+        ax4.set_ylim(*k_ylim)
+        ax4.set_yticks(k_yticks)
+        ax4.set_yticklabels([f'-10$^{{{e}}}$' for e in k_exps])
         ax4.invert_yaxis()
         ax4.set_xticks([0, 1, 2])
         ax4.minorticks_off()
