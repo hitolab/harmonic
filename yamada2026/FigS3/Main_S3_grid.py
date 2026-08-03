@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import Lib.plot_utils as pu
-from Main_A3 import VARIABLES, power_labels, prepare_variable_data
+from Main_S3 import VARIABLES, power_labels, prepare_variable_data
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="FigS3 Kim-Forger Analysis - all variables in one grid figure")

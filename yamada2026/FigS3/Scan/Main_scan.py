@@ -5,11 +5,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# A3 (for Main_A3's prepare_variable_data/power_labels) and Harmonicity root (for Lib)
+# FigS3 (for Main_S3's prepare_variable_data/power_labels) and Harmonicity root (for Lib)
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 import Lib.plot_utils as pu
-from Main_A3 import power_labels, prepare_variable_data
+from Main_S3 import power_labels, prepare_variable_data
 
 # -----------------------------------------------------------------------------
 # All 180 Kim-Forger DetailedModel state names (Data/Kim-Forger/DetailedModel.m,
@@ -66,7 +66,7 @@ FILE_STEMS = _resolve_file_stems(ALL_STATES)
 
 def plot_chunk(chunk_idx, var_names, all_data):
     """One figure per chunk of CHUNK_SIZE variables: rows = t-x / phase space /
-    K>0 / K<0 (same layout as Main_A3.py), columns = variables in this chunk.
+    K>0 / K<0 (same layout as Main_S3.py), columns = variables in this chunk.
     Missing-data variables (no source CSV yet) get a blank labeled panel."""
     cols = len(var_names)
     rows = 4

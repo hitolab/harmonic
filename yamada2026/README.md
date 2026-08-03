@@ -24,13 +24,13 @@ Fig5/Main_Fig5.py : Maps the initial-value regions where the piecewise-linear Go
 Fig6/Main.py : Derives the Goodwin limit cycle (main purpose); also renders the isosurface via Plotly/marching-cubes as an auxiliary/supplementary check.
 Fig6/Fig6.nb : Produces the actual 3D surface + limit cycle plot used in the figure.
 
-A1/Main_A1.py : Compares curvature/CSS metrics across smoothing bandwidths (sigma_hat) for FitzHugh-Nagumo and Stuart-Landau.
+FigS1/Main_S1.py : Compares curvature/CSS metrics across smoothing bandwidths (sigma_hat) for FitzHugh-Nagumo and Stuart-Landau.
 
-A2/Main_A2.py : Same sigma_hat comparison as A1, applied to experimental datasets (Cyanobacteria, mouse SCN).
+FigS2/Main_S2.py : Same sigma_hat comparison as FigS1, applied to experimental datasets (Cyanobacteria, mouse SCN).
 
-A3/Main_A3.py : Curvature analysis of individual Kim-Forger model state variables (mRNA species).
-A3/Main_A3_grid.py : Grid figure combining all Main_A3 state-variable panels into one plot.
-A3/Scan/Main_scan.py : Curvature analysis scanned across all states of the Kim-Forger "detailed model".
+FigS3/Main_S3.py : Curvature analysis of individual Kim-Forger model state variables (mRNA species).
+FigS3/Main_S3_grid.py : Grid figure combining all Main_S3 state-variable panels into one plot.
+FigS3/Scan/Main_scan.py : Curvature analysis scanned across all states of the Kim-Forger "detailed model".
   Note: the detailed model itself (Data/Kim-Forger/DetailedModel.m, 180 states) is not our own model -- it is taken as-is from Kim JK, Forger DB. A mechanism for robust circadian temperature compensation via degradation rate regulation. Mol Syst Biol. 2012;8:630. doi:10.1038/msb.2012.62; we only ran the curvature analysis on its output.
 
 Lib
