@@ -29,14 +29,12 @@ L_range = np.arange(0.1, 1.2, Lmgn)  # 0.1, 0.2, ..., 1.0
 model_name = MODEL_NAME
 
 # Stage-2 cache columns (embedded once per condition, never recomputed on a
-# cache hit): the curvature-derived summary metrics, in mpmath.
-# 'KH_scaled_mp' (a legacy B_Cal_var-style, (10*pi)-normalized metric) has
-# been retired -- only the perimeter-normalized kh_val/perimeter_scaled are
-# still computed. Its presence in an on-disk cache is now used purely as a
-# "this is a stale, pre-fix cache" marker (see compute_condition_data).
+# cache hit): the curvature-derived summary metrics, in mpmath. The recorded
+# trajectory itself is in period-normalized time (tau = t/T, see
+# compute_condition_data) -- a cache missing 'period_post' predates that
+# scheme and is treated as fully stale (trajectory and metrics both).
 MP_SUMMARY_COLUMNS = ['kh_val_signed_mp', 'perimeter_scaled_mp']
 MP_TRAJ_COLUMNS = ['X_mp', 'DotX_mp', 'K_mp']
-_LEGACY_MARKER_COLUMN = 'KH_scaled_mp'
 
 
 # -----------------------------------------------------------------------------
@@ -105,6 +103,7 @@ def _compute_summary_metrics(X_mp, DotX_mp, K_mp):
     DotX_arr = hl.mp_to_float_array(DotX_mp)
 
     kh_val = None
+    perimeter_postnorm = None
     perimeter_scaled = None
     if len(X_arr) > 1:
         p1, p2 = get_n_cycle_indices(X_arr, 1)
@@ -113,6 +112,9 @@ def _compute_summary_metrics(X_mp, DotX_mp, K_mp):
         diff_x = X_cycle[1:] - X_cycle[:-1]
         diff_dx = D_cycle[1:] - D_cycle[:-1]
         perimeter = np.sum(np.sqrt(diff_x ** 2 + diff_dx ** 2))
+        # Perimeter of the (already tau-normalized, still space-raw) phase
+        # curve -- the "Perimeter_PostNorm" diagnostic column.
+        perimeter_postnorm = float(perimeter) if not np.isnan(perimeter) else None
         S = perimeter / 1.0 if perimeter > 1e-12 else 1.0
         if not np.isnan(S):
             S_mp = mp.mpf(repr(S))
@@ -143,6 +145,7 @@ def _compute_summary_metrics(X_mp, DotX_mp, K_mp):
         'has_k_inversion': has_k_inversion,
         'always_negative': always_negative,
         'kh_val': kh_val,
+        'perimeter_postnorm': perimeter_postnorm,
         'perimeter_scaled': perimeter_scaled,
     }
 
@@ -150,56 +153,92 @@ def _compute_summary_metrics(X_mp, DotX_mp, K_mp):
 def compute_condition_data(n_val, l_val, R_raw, force_recalc=False):
     """
     Stage 2: produces/loads the unified high-precision (mpmath) trajectory
-    cache for one (N, L) limitcycle condition -- X, dX/dt, curvature of X
-    over NUM_CYCLES_HP cycles -- plus the curvature-derived summary metrics
-    (has_k_inversion, kh_val, perimeter_scaled), computed exactly once and
-    cached alongside the raw trajectory. On a fresh cache hit nothing is
-    recomputed, matching the "plot only if the data CSVs are already
-    complete" execution model.
-    A cache written by an older version of this pipeline (still carrying the
-    now-retired 'KH_scaled_mp' column, and computed via the flawed
-    re-differentiation approach -- see _compute_summary_metrics) is treated
-    as having a fresh raw trajectory but stale metrics: the expensive
-    resimulation is skipped, but the summary metrics are recomputed from the
-    (still-valid) cached trajectory and the cache is rewritten in the
-    current format.
+    cache for one (N, L) limitcycle condition, in PERIOD-NORMALIZED time
+    (tau = t / T, T = the condition's measured limit-cycle period): the ODE
+    right-hand side is scaled by T before integrating (dx/dtau = T * f(x)),
+    so tau advances by exactly 1 per raw period without touching DT itself.
+    X/dX/dtau/curvature-in-tau plus the curvature-derived summary metrics
+    (has_k_inversion, kh_val, perimeter_scaled/postnorm/pre) are computed
+    once and cached together. On a fresh cache hit nothing is recomputed,
+    matching the "plot only if the data CSVs are already complete" execution
+    model. A cache predating this scheme (missing 'period_post') means a
+    different trajectory definition, not just stale metrics, so it's treated
+    as a full cache miss -- everything below is recomputed from scratch.
     All curvature work is done in mpmath (MP_DPS digits) end to end; the
-    raw arrays and the summary scalars are both stored on disk as
-    full-precision decimal strings (via save_plot_data_mp/load_plot_data_mp),
-    never silently rounded to float64 except where a caller explicitly asks
-    for a float (e.g. for plotting).
+    raw arrays and the KH/perimeter_scaled summary scalars are stored on
+    disk as full-precision decimal strings (via save_plot_data_mp/
+    load_plot_data_mp). The remaining diagnostics (perimeter_pre,
+    perimeter_postnorm, period_post, state_post) are plain float64 -- none
+    of them feed the precision-critical KH pipeline, they're just recorded
+    for the heatmap CSV.
     """
+    import mpmath as mp
+
     cache_name = hl.hp_cache_name(MODEL_NAME, n_val, l_val)
     mp_cols = MP_TRAJ_COLUMNS + MP_SUMMARY_COLUMNS
     cached = hl.load_plot_data_mp(cache_name, mp_columns=mp_cols, dps=MP_DPS) if not force_recalc else None
 
-    have_traj = cached is not None and 'X_mp' in cached and len(cached['X_mp']) > 0
-    # Also treat a cache missing 'always_negative' or the signed 'kh_val_signed_mp'
-    # (both added after the original has_k_inversion/kh_val/perimeter_scaled)
-    # as needing a metrics-only recompute, same as a legacy cache -- the
-    # trajectory itself is still reused as-is.
-    is_legacy = have_traj and (
-        _LEGACY_MARKER_COLUMN in cached
-        or 'always_negative' not in cached
-        or 'kh_val_signed_mp' not in cached
+    have_traj = (
+        cached is not None and 'X_mp' in cached and len(cached['X_mp']) > 0
+        and 'period_post' in cached
     )
 
     if have_traj:
         T_final = cached['T']
         X_mp, DotX_mp, K_mp = cached['X_mp'], cached['DotX_mp'], cached['K_mp']
+        has_k_inversion = bool(cached['has_k_inversion'][0])
+        always_negative = bool(cached['always_negative'][0])
+        kh_val = cached['kh_val_signed_mp'][0]
+        perimeter_scaled = cached['perimeter_scaled_mp'][0]
+        perimeter_postnorm = float(cached['perimeter_postnorm'][0])
+        perimeter_pre = float(cached['perimeter_pre'][0])
+        period_post = float(cached['period_post'][0])
+        state_post = int(cached['state_post'][0])
     else:
         # 1) Re-verify convergence at high precision from the already-converged
-        #    double checkpoint.
+        #    double checkpoint, in the ORIGINAL (unscaled) time -- this both
+        #    refines the on-cycle state and yields a high-precision period T.
         checkpoint = [R_raw[0][0], R_raw[1][0], R_raw[2][0]]
-        traj_conv, _, _ = hl.runge_cycle_mp(
+        traj_conv, state_code_pre, T_hp = hl.runge_cycle_mp(
             goodwin_rhs_mp, checkpoint, DT, params=(l_val, n_val), dps=MP_DPS
         )
         refined_state = traj_conv[-1]
 
-        # 2) Re-integrate the same span at high precision.
-        n_steps = len(R_raw[0])
+        # Pre-normalization perimeter: cheap float64 diagnostic over the last
+        # measured raw period of the (unscaled) convergence trajectory --
+        # not part of the precision-critical KH pipeline, so float64 is fine.
+        n_last = max(2, int(round(T_hp / DT))) if T_hp else len(traj_conv) - 1
+        x_tail = np.array([float(s[0]) for s in traj_conv[-(n_last + 1):]])
+        dot_tail = np.gradient(x_tail, DT)
+        perimeter_pre = float(np.sum(np.hypot(np.diff(x_tail), np.diff(dot_tail))))
+
+        # 2) Scale the RHS by the measured period T so tau = t/T advances
+        #    exactly 1 per raw period: dx/dtau = T * f(x). DT is left
+        #    untouched -- scaling the equation instead of the step size
+        #    avoids per-condition DT tuning.
+        T_hp_mp = mp.mpf(repr(T_hp))
+
+        def scaled_rhs(state, params):
+            d = goodwin_rhs_mp(state, params)
+            return tuple(T_hp_mp * v for v in d)
+
+        # 3) Re-run convergence detection under the scaled RHS from the
+        #    refined state -- confirms the state classification survives the
+        #    rescaling (should stay limitcycle, but this checks rather than
+        #    assumes it) and gives a refined on-cycle state plus the
+        #    realized tau-period (nominally ~1).
+        traj_conv2, state_post, period_post_raw = hl.runge_cycle_mp(
+            scaled_rhs, refined_state, DT, params=(l_val, n_val), dps=MP_DPS
+        )
+        period_post = period_post_raw if period_post_raw is not None else float('nan')
+        refined_state2 = traj_conv2[-1]
+
+        # 4) Integrate NUM_CYCLES_HP tau-cycles forward -- this is the
+        #    trajectory that gets cached/plotted/analyzed. Fixed step count
+        #    regardless of (N, L), since one tau-cycle is always length 1.
+        n_steps = int(round(NUM_CYCLES_HP / DT))
         traj_mp = hl.runge_iterate_mp(
-            goodwin_rhs_mp, refined_state, DT, n_steps - 1,
+            scaled_rhs, refined_state2, DT, n_steps,
             params=(l_val, n_val), dps=MP_DPS
         )
         x_mp = [s[0] for s in traj_mp]
@@ -219,16 +258,11 @@ def compute_condition_data(n_val, l_val, R_raw, force_recalc=False):
         DotX_mp = dx_mp[i0:i1]
         K_mp = kx_mp[i0:i1]
 
-    if have_traj and not is_legacy:
-        has_k_inversion = bool(cached['has_k_inversion'][0])
-        always_negative = bool(cached['always_negative'][0])
-        kh_val = cached['kh_val_signed_mp'][0]
-        perimeter_scaled = cached['perimeter_scaled_mp'][0]
-    else:
         metrics = _compute_summary_metrics(X_mp, DotX_mp, K_mp)
         has_k_inversion = metrics['has_k_inversion']
         always_negative = metrics['always_negative']
         kh_val = metrics['kh_val']
+        perimeter_postnorm = metrics['perimeter_postnorm']
         perimeter_scaled = metrics['perimeter_scaled']
 
         hl.save_plot_data_mp(
@@ -238,12 +272,20 @@ def compute_condition_data(n_val, l_val, R_raw, force_recalc=False):
                 'always_negative': [float(always_negative)],
                 'kh_val_signed_mp': [kh_val],
                 'perimeter_scaled_mp': [perimeter_scaled],
+                'perimeter_postnorm': [perimeter_postnorm],
+                'perimeter_pre': [perimeter_pre],
+                'period_post': [period_post],
+                'state_post': [float(state_post)],
             },
             cache_name, mp_columns=mp_cols, dps=MP_DPS
         )
 
     return {
         'T': T_final, 'X_mp': X_mp, 'DotX_mp': DotX_mp, 'K_mp': K_mp,
+        'perimeter_postnorm': perimeter_postnorm,
+        'perimeter_pre': perimeter_pre,
+        'period_post': period_post,
+        'state_post': state_post,
         'has_k_inversion': has_k_inversion,
         'always_negative': always_negative,
         'kh_val': kh_val, 'perimeter_scaled': perimeter_scaled,
@@ -337,6 +379,14 @@ def _write_heatmap_csv(states_df, summary_grid, heatmap_csv_path):
     (undefined for KH<0): it has the same magnitude as the old abs()-based
     log10_KH, just sign-flipped. plot_heatmap() mirrors vmin/vmax and the
     colormap direction to match, so the actual plotted colors are unchanged.
+
+    Perimeter_PreNorm/Perimeter_PostNorm/Period_PostNorm/State_PostNorm are
+    plain-float64 diagnostics for the period-normalization scheme (see
+    compute_condition_data): perimeter before vs. after tau-normalization
+    (both before the spatial S-scaling that produces Perimeter_Scaled), the
+    realized tau-period (nominally ~1), and the state classification
+    (1=limitcycle, 2=fixed, 0=not converged) re-checked under the
+    period-scaled RHS.
     """
     import mpmath as mp
 
@@ -345,6 +395,7 @@ def _write_heatmap_csv(states_df, summary_grid, heatmap_csv_path):
 
     Xaxi, Yaxi = [], []
     KH_str, log10_KH_str, P_scaled_str, AlwaysNeg_col = [], [], [], []
+    P_pre_col, P_postnorm_col, Period_post_col, State_post_col = [], [], [], []
     for n in N_vals:
         for l in L_vals:
             Xaxi.append(l)
@@ -362,11 +413,17 @@ def _write_heatmap_csv(states_df, summary_grid, heatmap_csv_path):
                 log10_KH_str.append('')
             P_scaled_str.append(mp.nstr(p_scaled, MP_DPS) if p_scaled is not None else '')
             AlwaysNeg_col.append(always_negative if always_negative is not None else '')
+            P_pre_col.append(entry['perimeter_pre'] if entry else '')
+            P_postnorm_col.append(entry['perimeter_postnorm'] if entry else '')
+            Period_post_col.append(entry['period_post'] if entry else '')
+            State_post_col.append(entry['state_post'] if entry else '')
 
     df_heatmap = pd.DataFrame({
         'N': Yaxi, 'L': Xaxi,
         'KH': KH_str, 'log10_KH': log10_KH_str, 'Perimeter_Scaled': P_scaled_str,
         'Always_Negative': AlwaysNeg_col,
+        'Perimeter_PreNorm': P_pre_col, 'Perimeter_PostNorm': P_postnorm_col,
+        'Period_PostNorm': Period_post_col, 'State_PostNorm': State_post_col,
     })
     df_heatmap[df_heatmap['KH'] != ''].to_csv(heatmap_csv_path, index=False)
     print(f"Saved {heatmap_csv_path}")
@@ -450,19 +507,20 @@ def _load_existing_states_csv(csv_path):
 
 
 def _cache_is_fresh(cache_path):
-    """Cheap header-only check: does this Stage-2 cache already include the
-    embedded summary columns in the CURRENT format (as opposed to an older
-    cache that only has the raw trajectory, or a legacy cache still carrying
-    the retired 'KH_scaled_mp' column -- whose kh_val was computed via the
-    flawed re-differentiation approach, see _compute_summary_metrics)?
-    Avoids loading the full (~100k-row) trajectory just to check freshness."""
+    """Cheap header-only check: does this Stage-2 cache already carry the
+    period-normalized-time trajectory format (as opposed to an older cache
+    predating that scheme, which means a different trajectory definition,
+    not just stale metrics -- see compute_condition_data)? Avoids loading
+    the full trajectory just to check freshness."""
     try:
         header = pd.read_csv(cache_path, comment='#', nrows=0)
     except Exception:
         return False
-    return ('has_k_inversion' in header.columns and 'always_negative' in header.columns
-            and 'kh_val_signed_mp' in header.columns
-            and _LEGACY_MARKER_COLUMN not in header.columns)
+    required = {
+        'has_k_inversion', 'always_negative', 'kh_val_signed_mp',
+        'perimeter_postnorm', 'perimeter_pre', 'period_post', 'state_post',
+    }
+    return required.issubset(set(header.columns))
 
 
 def _all_data_gathered(df_states, script_dir):
@@ -518,6 +576,10 @@ def main():
                     'kh_val': data['kh_val'],
                     'perimeter_scaled': data['perimeter_scaled'],
                     'always_negative': data['always_negative'],
+                    'perimeter_pre': data['perimeter_pre'],
+                    'perimeter_postnorm': data['perimeter_postnorm'],
+                    'period_post': data['period_post'],
+                    'state_post': data['state_post'],
                 }
     else:
         records = []
@@ -571,6 +633,10 @@ def main():
                             'kh_val': data['kh_val'],
                             'perimeter_scaled': data['perimeter_scaled'],
                             'always_negative': data['always_negative'],
+                            'perimeter_pre': data['perimeter_pre'],
+                            'perimeter_postnorm': data['perimeter_postnorm'],
+                            'period_post': data['period_post'],
+                            'state_post': data['state_post'],
                         }
 
                 except Exception as e:
