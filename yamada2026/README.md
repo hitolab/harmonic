@@ -3,7 +3,7 @@
 **arXiv 2026**  
 Yamada Y, Kabata Y, Fukasaku R, Ito H  
 A curvature-based criterion for harmonic circadian waveforms
-[arXiv:xxxxx]()
+[arXiv:2608.02562](https://arxiv.org/abs/2608.02562)
 
 ## Code overview (yamada2026/)
 
